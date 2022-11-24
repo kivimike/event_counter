@@ -1,4 +1,6 @@
+import 'package:event_counter/pages/home_page.dart';
 import 'package:flutter/material.dart';
+import 'package:event_counter/components/routes.dart' as route;
 
 void main() {
   runApp(const MyApp());
@@ -16,7 +18,8 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home:
+      onGenerateRoute: route.controller,
+      initialRoute: route.homePage,
       theme: ThemeData(primarySwatch: Colors.blueGrey),
     );
   }
