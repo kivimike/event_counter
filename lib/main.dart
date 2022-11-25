@@ -1,8 +1,16 @@
+import 'package:event_counter/components/event.dart';
 import 'package:event_counter/pages/home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:event_counter/components/routes.dart' as route;
+import 'package:hive_flutter/hive_flutter.dart';
 
-void main() {
+void main() async {
+  await Hive.initFlutter();
+  await Hive..registerAdapter(EventAdapter());
+
+  // open a box
+  await Hive.openBox("Clicker_DB");
+
   runApp(const MyApp());
 }
 

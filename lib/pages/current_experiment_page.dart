@@ -1,6 +1,8 @@
+import 'package:event_counter/database/database.dart';
 import 'package:flutter/material.dart';
 import 'package:event_counter/components/event.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
+import 'package:event_counter/components/routes.dart' as route;
 
 class CurrentExperimentPage extends StatefulWidget {
   const CurrentExperimentPage({Key? key}) : super(key: key);
@@ -10,51 +12,83 @@ class CurrentExperimentPage extends StatefulWidget {
 }
 
 class _CurrentExperimentPageState extends State<CurrentExperimentPage> {
+
+  ClickerDatabase db = ClickerDatabase();
+  
   var counter = 0;
+  bool sessionIsActive = true;
   String session_status = 'Start session';
   List<Event> eventList = [];
+  late DateTime dateTimeStart;
+  late DateTime dateTimeEnd;
+
 
   void increment() {
-    if (counter == 0){
-      start_session();
+    if (sessionIsActive == true) {
+      if (counter == 0) {
+        start_session();
+      }
+      setState(() {
+        counter++;
+        eventList.add(Event(number: counter, dateTime: DateTime.now()));
+      });
     }
-    setState(() {
-      counter++;
-      eventList.add(Event(number: counter, dateTime: DateTime.now()));
-    });
   }
 
-  void start_session(){
+  void start_session() {
+    dateTimeStart = DateTime.now();
     setState(() {
-      counter=0;
+      counter = 0;
       eventList.add(Event(number: 0, dateTime: DateTime.now()));
-      session_status = 'End session';
+      session_status = 'Stop session';
     });
   }
 
-  void session_controller(){
-    if (session_status == 'Start session'){
+  void session_controller() {
+    if (session_status == 'Start session') {
       start_session();
-    } else if (session_status == 'End session'){
+    } else if (session_status == 'Stop session') {
       stop_session();
     }
   }
 
   void decrease() {
-    setState(() {
-      if (counter > 0) {
-        counter--;
-        eventList.removeLast();
-        print(eventList);
-      }
-    });
+    if (sessionIsActive == true) {
+      setState(() {
+        if (counter > 0) {
+          counter--;
+          eventList.removeLast();
+          print(eventList);
+        }
+      });
+    }
   }
 
-  void stop_session(){
+  void stop_session() {
+    dateTimeEnd = DateTime.now();
+    sessionIsActive = false;
     setState(() {
-      session_status = 'Save';
+      session_status = 'Session stopped';
     });
+  }
+  
+  void save(){
+    if (sessionIsActive == true){
+      stop_session();
+    }
+    db.loadData();
+    Map record = {
+      'recordName': DateTime.now().toString(),
+      'dateTimeStart': dateTimeStart,
+      'dateTimeEnd': dateTimeEnd,
+      'events': eventList
 
+    };
+    db.records.insert(0, record);
+    db.updateDatabase();
+    print(db.records);
+    // Navigator.pushReplacementNamed(context, route.homePage);
+    Navigator.pop(context);
   }
 
   @override
@@ -69,9 +103,7 @@ class _CurrentExperimentPageState extends State<CurrentExperimentPage> {
                       letterSpacing: 1.5,
                       fontWeight: FontWeight.w400,
                       fontSize: 28))),
-          actions: [
-            IconButton(onPressed: (){}, icon: Icon(Icons.save))
-          ],
+          actions: [IconButton(onPressed: () {save();}, icon: Icon(Icons.save))],
         ),
         backgroundColor: Colors.blueGrey.shade900,
         body: Column(
@@ -98,10 +130,16 @@ class _CurrentExperimentPageState extends State<CurrentExperimentPage> {
                 Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: TextButton(
-                      onPressed: () {session_controller();},
+                      onPressed: () {
+                        session_controller();
+                      },
                       child: Text(
                         '${session_status}',
-                        style: TextStyle(fontSize: 16, color: Colors.orange, fontWeight: FontWeight.w400, letterSpacing: 1),
+                        style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.orange,
+                            fontWeight: FontWeight.w400,
+                            letterSpacing: 1),
                       )),
                 ),
                 Spacer(),
