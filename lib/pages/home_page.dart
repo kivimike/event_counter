@@ -1,3 +1,4 @@
+import 'package:event_counter/components/delete_alert_box.dart';
 import 'package:event_counter/components/main_menu_button.dart';
 import 'package:event_counter/components/record_tile.dart';
 import 'package:event_counter/database/database.dart';
@@ -33,8 +34,21 @@ class _HomePageState extends State<HomePage> {
       db.loadData();
     });
     db.updateDatabase();
+    Navigator.pop(context);
   }
 
+  void cancelDialogBox() {
+    Navigator.pop(context);
+  }
+
+  void showDeleteDialog(index) {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return DeleteAlertBox(
+              onDelete: () => deleteRecord(index), onCancel: cancelDialogBox);
+        });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +65,8 @@ class _HomePageState extends State<HomePage> {
                     fontSize: 28))),
       ),
       floatingActionButton: MainMenuButton(
-        onPressed: () => Navigator.pushNamed(context, route.currentExperiment).then((_) => setState((){})),
+        onPressed: () => Navigator.pushNamed(context, route.currentExperiment)
+            .then((_) => setState(() {})),
       ),
       backgroundColor: Colors.blueGrey.shade900,
       body: Padding(
@@ -64,11 +79,10 @@ class _HomePageState extends State<HomePage> {
               return RecordTile(
                 name: db.records[index]['recordName'].toString(),
                 date: db.records[index]['dateTimeStart'].toString(),
-                onDelete: () => deleteRecord(index),
+                onDelete: () => showDeleteDialog(index),
               );
             }),
       ),
     );
   }
 }
-

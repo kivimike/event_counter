@@ -1,3 +1,4 @@
+import 'package:event_counter/components/save_alert_box.dart';
 import 'package:event_counter/database/database.dart';
 import 'package:flutter/material.dart';
 import 'package:event_counter/components/event.dart';
@@ -14,6 +15,7 @@ class CurrentExperimentPage extends StatefulWidget {
 class _CurrentExperimentPageState extends State<CurrentExperimentPage> {
 
   ClickerDatabase db = ClickerDatabase();
+  TextEditingController controller = TextEditingController();
   
   var counter = 0;
   bool sessionIsActive = true;
@@ -78,7 +80,7 @@ class _CurrentExperimentPageState extends State<CurrentExperimentPage> {
     }
     db.loadData();
     Map record = {
-      'recordName': DateTime.now().toString(),
+      'recordName': controller.text,
       'dateTimeStart': dateTimeStart,
       'dateTimeEnd': dateTimeEnd,
       'events': eventList
@@ -88,7 +90,21 @@ class _CurrentExperimentPageState extends State<CurrentExperimentPage> {
     db.updateDatabase();
     print(db.records);
     // Navigator.pushReplacementNamed(context, route.homePage);
+    controller.clear();
     Navigator.pop(context);
+    Navigator.pop(context);
+
+  }
+
+  void cancelDialogBox() {
+    controller.clear();
+    Navigator.pop(context);
+  }
+
+  void saveDialog(){
+    showDialog(context: context, builder: (context){
+      return SaveAlertBox(onSave: save, onCancel: cancelDialogBox, controller: controller);
+    });
   }
 
   @override
@@ -103,8 +119,9 @@ class _CurrentExperimentPageState extends State<CurrentExperimentPage> {
                       letterSpacing: 1.5,
                       fontWeight: FontWeight.w400,
                       fontSize: 28))),
-          actions: [IconButton(onPressed: () {save();}, icon: Icon(Icons.save))],
+          actions: [IconButton(onPressed: () {saveDialog();}, icon: Icon(Icons.save))],
         ),
+        resizeToAvoidBottomInset: false,
         backgroundColor: Colors.blueGrey.shade900,
         body: Column(
           children: [
