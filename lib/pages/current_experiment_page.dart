@@ -114,7 +114,7 @@ class _CurrentExperimentPageState extends State<CurrentExperimentPage> {
           //centerTitle: true,
           backgroundColor: Colors.blueGrey.shade600,
           title: Container(
-              child: Text("Records",
+              child: const Text("Records",
                   style: TextStyle(
                       letterSpacing: 1.5,
                       fontWeight: FontWeight.w400,

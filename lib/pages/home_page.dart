@@ -1,6 +1,7 @@
 import 'package:event_counter/components/delete_alert_box.dart';
 import 'package:event_counter/components/main_menu_button.dart';
 import 'package:event_counter/components/record_tile.dart';
+import 'package:event_counter/components/record_view.dart';
 import 'package:event_counter/database/database.dart';
 import 'package:flutter/material.dart';
 import 'package:event_counter/components/routes.dart' as route;
@@ -76,10 +77,19 @@ class _HomePageState extends State<HomePage> {
             physics: const NeverScrollableScrollPhysics(),
             itemCount: db.records.length,
             itemBuilder: (context, index) {
-              return RecordTile(
-                name: db.records[index]['recordName'].toString(),
-                date: db.records[index]['dateTimeStart'].toString(),
-                onDelete: () => showDeleteDialog(index),
+              return GestureDetector(
+                onTap: () {
+                  showDialog(
+                      context: context,
+                      builder: (context) {
+                        return RecordView(index: index);
+                      });
+                },
+                child: RecordTile(
+                  name: db.records[index]['recordName'].toString(),
+                  date: db.records[index]['dateTimeStart'].toString(),
+                  onDelete: () => showDeleteDialog(index),
+                ),
               );
             }),
       ),
