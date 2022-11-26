@@ -70,13 +70,13 @@ class _HomePageState extends State<HomePage> {
             .then((_) => setState(() {})),
       ),
       backgroundColor: Colors.blueGrey.shade900,
-      body: Padding(
-        padding: const EdgeInsets.only(top: 8.0),
-        child: ListView.builder(
+      body: ListView(children: [
+        ListView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            itemCount: db.records.length,
+            itemCount: db.records.length + 1,
             itemBuilder: (context, index) {
+              if (index < db.records.length){
               return GestureDetector(
                 onTap: () {
                   showDialog(
@@ -90,9 +90,11 @@ class _HomePageState extends State<HomePage> {
                   date: db.records[index]['dateTimeStart'].toString(),
                   onDelete: () => showDeleteDialog(index),
                 ),
-              );
+              );} else {
+                return Container(height: MediaQuery.of(context).size.height * 0.1,);
+              }
             }),
-      ),
+      ]),
     );
   }
 }
