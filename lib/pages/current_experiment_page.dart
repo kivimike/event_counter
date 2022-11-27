@@ -13,26 +13,28 @@ class CurrentExperimentPage extends StatefulWidget {
 }
 
 class _CurrentExperimentPageState extends State<CurrentExperimentPage> {
-
   ClickerDatabase db = ClickerDatabase();
   TextEditingController controller = TextEditingController();
-  
-  var counter = 0;
+
+  int inputControllersNumber = 1;
+  List counter = [0, 0, 0];
   bool sessionIsActive = true;
   String session_status = 'Start session';
-  List<Event> eventList = [];
+  Map eventList = {0: [], 1: [],2: []};
   late DateTime dateTimeStart;
   late DateTime dateTimeEnd;
 
+  List colors = [Colors.orange.shade100, Colors.green.shade100, Colors.red.shade100];
+  Map fontsizes = {1: 80.0, 2: 80.0, 3: 50.0};
 
-  void increment() {
+  void increment(int i) {
     if (sessionIsActive == true) {
-      if (counter == 0) {
+      if (counter[0] == 0 && counter[1] == 0 && counter[2] == 0) {
         start_session();
       }
       setState(() {
-        counter++;
-        eventList.add(Event(number: counter, dateTime: DateTime.now()));
+        counter[i]++;
+        eventList[i].add(Event(number: counter[i], dateTime: DateTime.now()));
       });
     }
   }
@@ -40,8 +42,10 @@ class _CurrentExperimentPageState extends State<CurrentExperimentPage> {
   void start_session() {
     dateTimeStart = DateTime.now();
     setState(() {
-      counter = 0;
-      eventList.add(Event(number: 0, dateTime: DateTime.now()));
+      counter = [0,0,0];
+      for (int i = 0; i < counter.length; ++i){
+        eventList[i].add(Event(number: 0, dateTime: DateTime.now()));
+      }
       session_status = 'Stop session';
     });
   }
@@ -54,12 +58,12 @@ class _CurrentExperimentPageState extends State<CurrentExperimentPage> {
     }
   }
 
-  void decrease() {
+  void decrease(i) {
     if (sessionIsActive == true) {
       setState(() {
-        if (counter > 0) {
-          counter--;
-          eventList.removeLast();
+        if (counter[i] > 0) {
+          counter[i]--;
+          eventList[i].removeLast();
           print(eventList);
         }
       });
@@ -73,9 +77,9 @@ class _CurrentExperimentPageState extends State<CurrentExperimentPage> {
       session_status = 'Session stopped';
     });
   }
-  
-  void save(){
-    if (sessionIsActive == true){
+
+  void save() {
+    if (sessionIsActive == true) {
       stop_session();
     }
     db.loadData();
@@ -84,7 +88,6 @@ class _CurrentExperimentPageState extends State<CurrentExperimentPage> {
       'dateTimeStart': dateTimeStart,
       'dateTimeEnd': dateTimeEnd,
       'events': eventList
-
     };
     db.records.insert(0, record);
     db.updateDatabase();
@@ -93,7 +96,6 @@ class _CurrentExperimentPageState extends State<CurrentExperimentPage> {
     controller.clear();
     Navigator.pop(context);
     Navigator.pop(context);
-
   }
 
   void cancelDialogBox() {
@@ -101,10 +103,80 @@ class _CurrentExperimentPageState extends State<CurrentExperimentPage> {
     Navigator.pop(context);
   }
 
-  void saveDialog(){
-    showDialog(context: context, builder: (context){
-      return SaveAlertBox(onSave: save, onCancel: cancelDialogBox, controller: controller);
-    });
+  void saveDialog() {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return SaveAlertBox(
+              onSave: save, onCancel: cancelDialogBox, controller: controller);
+        });
+  }
+
+  void addControllers(){
+    if(inputControllersNumber < 3){
+      inputControllersNumber++;
+    }
+  }
+
+  void removeControllers(){
+    if(inputControllersNumber > 1){
+      inputControllersNumber--;
+    }
+  }
+
+  List<Widget> inputControllers() {
+
+    double icWidth = MediaQuery.of(context).size.width / inputControllersNumber;
+    List<Widget> ics = [];
+    for (int i = 0; i < inputControllersNumber; ++i) {
+      ics.add(Column(
+        children: [
+          GestureDetector(
+            onTap: () {
+              increment(i);
+            },
+            child: SizedBox(
+              height: MediaQuery.of(context).size.height * 0.15,
+              width: icWidth,
+              child: Text(
+                '${counter[i]}',
+                style: TextStyle(
+                  fontSize: fontsizes[inputControllersNumber],
+                  fontWeight: FontWeight.w300,
+                  color: colors[i],
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
+          IconButton(
+              onPressed: () {
+                decrease(i);
+              },
+              icon: Icon(Icons.exposure_minus_1),
+              color: Colors.orange),
+        ],
+      ));
+    }
+    return ics;
+  }
+
+  List<ChartSeries> charts(){
+    List<ChartSeries> charts = [];
+    for (int i = 0; i < counter.length; ++i){
+      charts.add(
+        AreaSeries<dynamic, DateTime>(
+          dataSource: eventList[i],
+          xValueMapper: (data, _) => data.dateTime,
+          yValueMapper: (data, _) => data.number,
+          color: colors[i],
+          opacity: 0.8,
+          borderColor: Colors.blueGrey.shade50,
+          borderWidth: 1
+        ),
+      );
+    }
+    return charts;
   }
 
   @override
@@ -119,7 +191,13 @@ class _CurrentExperimentPageState extends State<CurrentExperimentPage> {
                       letterSpacing: 1.5,
                       fontWeight: FontWeight.w400,
                       fontSize: 28))),
-          actions: [IconButton(onPressed: () {saveDialog();}, icon: Icon(Icons.save))],
+          actions: [
+            IconButton(
+                onPressed: () {
+                  saveDialog();
+                },
+                icon: Icon(Icons.save))
+          ],
         ),
         resizeToAvoidBottomInset: false,
         backgroundColor: Colors.blueGrey.shade900,
@@ -133,14 +211,7 @@ class _CurrentExperimentPageState extends State<CurrentExperimentPage> {
                       majorGridLines: MajorGridLines(width: 0)),
                   primaryYAxis: (NumericAxis(isVisible: false)),
                   //tooltipBehavior: _tooltipBehavior,
-                  series: <ChartSeries>[
-                    AreaSeries<Event, DateTime>(
-                      dataSource: eventList,
-                      xValueMapper: (Event data, _) => data.dateTime,
-                      yValueMapper: (Event data, _) => data.number,
-                      color: Colors.orange.shade100,
-                    ),
-                  ]),
+                  series: charts()),
             ),
             Row(
               children: [
@@ -161,33 +232,31 @@ class _CurrentExperimentPageState extends State<CurrentExperimentPage> {
                 ),
                 Spacer(),
                 Padding(
+                  padding: const EdgeInsets.all(0),
+                  child: IconButton(
+                      onPressed: () {
+                        setState(() {
+                          addControllers();
+                        });
+                      },
+                      icon: Icon(Icons.add),
+                      color: Colors.orange),
+                ),
+                Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: IconButton(
                       onPressed: () {
-                        decrease();
+                        setState(() {
+                          removeControllers();
+                        });
                       },
-                      icon: Icon(Icons.exposure_minus_1),
+                      icon: Icon(Icons.remove),
                       color: Colors.orange),
                 ),
               ],
             ),
-            GestureDetector(
-              onTap: () {
-                increment();
-              },
-              child: SizedBox(
-                height: MediaQuery.of(context).size.height * 0.3,
-                width: MediaQuery.of(context).size.width,
-                child: Text(
-                  '${counter}',
-                  style: TextStyle(
-                    fontSize: 80,
-                    fontWeight: FontWeight.w300,
-                    color: Colors.orange.shade100,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
+            Row(
+              children: inputControllers(),
             )
           ],
         ));
