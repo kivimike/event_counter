@@ -57,7 +57,7 @@ class _RecordViewState extends State<RecordView> {
             xValueMapper: (data, _) => data.dateTime,
             yValueMapper: (data, _) => data.number,
             color: colors[i],
-            opacity: 0.8,
+            opacity: 0.8 - i * 0.05,
             borderColor: Colors.blueGrey.shade50,
             borderWidth: 1),
       );
@@ -181,6 +181,39 @@ class _RecordViewState extends State<RecordView> {
     );
   }
 
+  Widget showDetails(){
+    if (countUsedControllers() == 1){
+      return Column(children: []);
+    }
+    return Column(children: [
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                height: 1,
+                width: MediaQuery.of(context).size.width * 0.3,
+                color: Colors.orange,
+              ),
+              Text('Details',
+                style: TextStyle(
+                    color: Colors.orange,
+                    letterSpacing: 2.0,
+                    fontSize: 12
+                ),),
+              Container(
+                height: 1,
+                width: MediaQuery.of(context).size.width * 0.3,
+                color: Colors.orange,
+              ),
+            ],
+          ),
+        ),
+        multipleControllersData(),
+    ]);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -223,31 +256,8 @@ class _RecordViewState extends State<RecordView> {
           TextLine(
               '${format(Duration(seconds: record['dateTimeEnd'].difference(record['dateTimeStart']).inSeconds))}',
               38),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Container(
-                  height: 1,
-                  width: MediaQuery.of(context).size.width * 0.3,
-                  color: Colors.orange,
-                ),
-                Text('Details',
-                style: TextStyle(
-                  color: Colors.orange,
-                  letterSpacing: 2.0,
-                  fontSize: 12
-                ),),
-                Container(
-                  height: 1,
-                  width: MediaQuery.of(context).size.width * 0.3,
-                  color: Colors.orange,
-                ),
-              ],
-            ),
-          ),
-          multipleControllersData(),
+
+          showDetails(),
         ],
       ),
     );
