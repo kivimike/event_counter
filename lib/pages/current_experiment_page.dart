@@ -24,7 +24,7 @@ class _CurrentExperimentPageState extends State<CurrentExperimentPage> {
   late DateTime dateTimeStart;
   late DateTime dateTimeEnd;
 
-  List colors = [Colors.orange.shade100, Colors.green.shade100, Colors.red.shade100];
+  List colors = [Colors.orange.shade400, Colors.green.shade400, Colors.red.shade400];
   Map fontsizes = {1: 80.0, 2: 80.0, 3: 50.0};
 
   void increment(int i) {
@@ -64,7 +64,7 @@ class _CurrentExperimentPageState extends State<CurrentExperimentPage> {
         if (counter[i] > 0) {
           counter[i]--;
           eventList[i].removeLast();
-          print(eventList);
+          //print(eventList);
         }
       });
     }
@@ -91,7 +91,7 @@ class _CurrentExperimentPageState extends State<CurrentExperimentPage> {
     };
     db.records.insert(0, record);
     db.updateDatabase();
-    print(db.records);
+    //print(db.records);
     // Navigator.pushReplacementNamed(context, route.homePage);
     controller.clear();
     Navigator.pop(context);
