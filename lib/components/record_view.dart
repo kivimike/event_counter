@@ -54,8 +54,17 @@ class _RecordViewState extends State<RecordView> {
     return n == 1 ? 1 : n * factorial(n - 1);
   }
 
-  double calculateProba(int m, double lambda) {
+  double calculateProba1(int m, double lambda) {
     return ((1 / pow(e, lambda)) * pow(lambda, m) / factorial(m)).clamp(0, 1);
+  }
+
+  double calculateProba(int m, double lambda) {
+    double p = 1 / exp(lambda);
+    for(int i = 0; i < m; ++i){
+      p *= lambda;
+      p /= (i + 1);
+    }
+    return p;
   }
 
   Map probaDataset() {
@@ -65,7 +74,7 @@ class _RecordViewState extends State<RecordView> {
       dataset[i] = [];
       double lambda =
           double.parse(eventsPerInterval(record['events'][i].length - 1));
-      for (int m = 1; m < 10; ++m) {
+      for (int m = 1; m < (lambda * 2).ceil()+5; ++m) {
         dataset[i]
             .add(ProbaPoint(probability: calculateProba(m, lambda), m: m));
       }
